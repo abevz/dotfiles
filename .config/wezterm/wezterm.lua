@@ -42,6 +42,7 @@ config.window_decorations = "TITLE|RESIZE"
 config.window_close_confirmation = "AlwaysPrompt"
 config.scrollback_lines = 5000
 config.default_workspace = "main"
+config.mux_enable_ssh_agent = true
 
 -- Tab bar
 config.use_fancy_tab_bar = true
@@ -54,6 +55,7 @@ config.inactive_pane_hsb = {
   brightness = 0.5
 }
 
+config.default_ssh_auth_sock = string.format('%s/.ssh/ssh_auth_sock',wezterm.home_dir)
 
 --config.debug_key_events = true
 
@@ -287,5 +289,6 @@ end)
 
 -- IMPORTANT: Sets WSL2 UBUNTU-22.04 as the defualt when opening Wezterm
 --config.default_domain = 'WSL:Ubuntu-24.04'
+require("sshconnect").apply_to_config(config)
 
 return config

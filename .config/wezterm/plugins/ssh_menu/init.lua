@@ -1,6 +1,19 @@
 local wezterm = require "wezterm"
 local act = wezterm.action
 local M = {}
+local SSH_AUTH_SOCK = os.getenv 'SSH_AUTH_SOCK'
+
+
+function shell(cmd)
+    local output = "null"
+    local f = io.popen(cmd)
+    if f ~= nil then
+        output = f:read("*all")
+        f:close()
+    end
+    return output
+end
+
 
 --TODO : generate entry for SSH keys directly In command palet too ?
 --TODO: Maybe offer parsing of ~/.ssh/config too ?
@@ -19,23 +32,47 @@ end
 -- Function to read SSH hosts from the known hosts file
 local function read_ssh_hosts()
   local ssh_hosts = {}
-  local known_hosts_file = get_known_hosts_path()
-  wezterm.log_info("Reading known hosts from: " .. known_hosts_file)
+  wezterm.log_info("Start forming list of servers")
+  wezterm.log_info('shell: ' .. shell("echo $SSH_AUTH_SOCK"))
+--  wezterm.log_info("Default sock" .. os.getenv("SSH_AUTH_SOCK"))
+	if ssh_hosts == nil then
+		ssh_hosts = {}
+	end
 
-  local f = io.open(known_hosts_file, "r")
-  if f then
-    for line in f:lines() do
-      -- Assuming each line in the file is a hostname
-      local host = line:match "%S+" -- Extracts the first word in each line
-      if host then
-        table.insert(ssh_hosts, host)
-        wezterm.log_info("Found host: " .. host)
-      end
+	for host, config in pairs(wezterm.enumerate_ssh_hosts()) do
+    if host ~= ".host" then
+    table.insert(ssh_hosts,host
+		--       {
+		-- 	name = host,
+		-- 	remote_address = config.hostname .. ":" .. config.port,
+		-- 	username = config.user,
+		-- 	multiplexing = "None",
+		-- 	assume_shell = "Posix",
+		-- }
+      )
+    
+   wezterm.log_info("Finded hosts:" .. host)
+
     end
-    f:close()
-  else
-    wezterm.log_error "Unable to open known hosts file"
   end
+   
+--  local known_hosts_file = get_known_hosts_path()
+--  wezterm.log_info("Reading known hosts from: " .. known_hosts_file)
+
+  -- local f = io.open(known_hosts_file, "r")
+  -- if f then
+  --   for line in f:lines() do
+  --     -- Assuming each line in the file is a hostname
+  --     local host = line:match "%S+" -- Extracts the first word in each line
+  --     if host then
+  --       table.insert(ssh_hosts, host)
+  --       wezterm.log_info("Found host: " .. host)
+  --     end
+  --   end
+  --   f:close()
+  -- else
+  --   wezterm.log_error "Unable to open known hosts file"
+  -- end
   return ssh_hosts
 end
 
@@ -44,6 +81,7 @@ function M.ssh_menu(window, pane)
   local ssh_hosts = read_ssh_hosts()
   local choices = {}
   for _, host in ipairs(ssh_hosts) do
+    wezterm.log_info( _ .. host)
     table.insert(choices, { label = "SSH to " .. host })
   end
 
